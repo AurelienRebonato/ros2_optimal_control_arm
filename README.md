@@ -18,8 +18,8 @@ This repository contains an **ROS 2 package** of an **Optimal Feedback Controlle
 ## Key Features
 - **Path computation**: Through an **Rapidly-exploring Random Tree (RRT) algorithm** smoothed using the **Artificial Potential Field (APF)** framework.
 - **Initial trajectory creation**: The desired trajectory is computed through a **polynomial trajectory planning**.
-- **Trajectory Tracking**: **TV-LQR** solves the finite-horizon Riccati equation backward in time to generate optimal tracking gains.
-- **Smooth Hold Mode**: Automatically switches from transient TV-LQR gains to a stable infinite-horizon LQR gain combined with Inverse Dynamics gravity compensation once the trajectory is completed.
+- **Trajectory Tracking**: **TV-LQI** solves the finite-horizon Riccati equation backward in time to generate optimal tracking gains.
+- **Smooth Hold Mode**: Automatically switches from transient TV-LQI gains to a stable infinite-horizon LQI gain combined with Inverse Dynamics gravity compensation once the trajectory is completed.
 - **Robust state estimation**: UKF is use to overcome noisy measurements and predict the full state accurately without requiring analytical derivatives.
 - **CTC Controller**
 
@@ -51,7 +51,7 @@ ros2 launch robot_arm_pkg gazebo.launch.py
 ```
 Publish goal
 ```
-ros2 topic pub --once /goal std_msgs/msg/Float64MultiArray "{data: [1.0, 1.0, 1.0]}"
+ros2 topic pub --once /goal std_msgs/msg/Float64MultiArray "{data: [1.0, 1+.0, 1.0]}"
 ```
 Change desired controller
 ```
@@ -75,8 +75,8 @@ To generate the path between the initial configuration and the desired configura
 As sensors provide noisy partial measurements, we used an UKF for optimal sensor estimation. This project firstly used an Extended Kalman Filter which diverged quickly, probably due to the linearization of the robot dynamics. The propagation of an set of sigma point through the non-linear RK4 step captures the mean and the covariance accurately.
 
 ### 3. Optimal tracking: TV-LQI
-- **TV-LQR formulation**: Solves the continuous-time finite-horizon Riccati differential equation to find the optimal gain that minimize the energy-error cost function.
-- **Integral Action (LQR)**: An augmented state incorporated the integral of the position error.
+- **TV-LQI formulation**: Solves the continuous-time finite-horizon Riccati differential equation to find the optimal gain that minimize the energy-error cost function.
+- **Integral Action (LQI)**: An augmented state incorporated the integral of the position error.
 
 ### 4. Basic CTC controller
 - Use feedaback linearization to cancel the robot's non-linear dynamics (inertia, Coriolis, and gravity) and impose a linear error dynamics using a PD law.
