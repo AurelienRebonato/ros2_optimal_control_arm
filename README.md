@@ -40,7 +40,7 @@ Create the workspace and copy the package
 ```bash
 mkdir -p ~/ros2_ws/src
 cd ~/ros2_ws/src
-git clone https://github.com/rebonatoaurelien-create/ros2_optimal_control_arm.git
+git clone https://github.com/AurelienRebonato/ros2_optimal_control_arm.git
 cd ~/ros2_ws
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 source install/setup.bash
