@@ -21,23 +21,31 @@ class Arm
     double link2_mass;
     double link3_mass;
     
-    MatrixXd G1;
-    MatrixXd G2;
-    MatrixXd G3;
+    Matrix6d G_virtual;
+    Matrix6d G1;
+    Matrix6d G2;
+    Matrix6d G3;
     std::vector<MatrixXd> G_list;
 
     Vector6d S1;
     Vector6d S2;
     Vector6d S3;
+    Vector6d S4;
+    Vector6d S5;
+    Vector6d S6;
 
     std::vector<MatrixXd> S_list;
 
-    Matrix4d M1;
-    Matrix4d M2;
-    Matrix4d M3;
-    Matrix4d Me;
+    Matrix4d M0;
+    Matrix4d M0_1;
+    Matrix4d M0_2;
+    Matrix4d M0_3;
+    Matrix4d M0_4;
+    Matrix4d M0_5;
+    Matrix4d M0_6;
+    Matrix4d M0_e;
 
-    std::vector<Matrix4d> M_list;
+    std::vector<Matrix4d> M_abs_list;
     public:
         Arm(
         double m_link1_length,

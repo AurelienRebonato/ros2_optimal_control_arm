@@ -75,8 +75,10 @@ namespace screw_math
 
     }
 
-    MatrixXd getSpatialInertiaMatrix(double mass, double length, double radius)
+    MatrixX6d getSpatialInertiaMatrix(double mass, double length, double radius)
     {
+        // Matrix G = Ib, 0,
+        //            0, Identity*mass    
         // The robot's links are supposed to be cylinder
         double Ixx_yy = (mass / 12.0) * (3.0 * radius * radius + length * length);
         double Izz = (mass / 2.0) * (radius * radius);
@@ -87,7 +89,7 @@ namespace screw_math
 
         Matrix3d I = Matrix3d::Identity();
         
-        MatrixXd G = MatrixXd::Zero(6, 6);
+        Matrix6d G = Matrix6d::Zero();
         G.block<3, 3> (0,0) = Ib;
         G.block<3, 3> (3,3) = mass*I;
 

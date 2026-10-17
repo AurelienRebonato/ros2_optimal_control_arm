@@ -19,6 +19,7 @@ using Matrix6x3d = Eigen::Matrix<double, 6, 3>;
 
 
 Arm::Arm(
+    // 7 DoF arm modeling a real arm
     double m_link1_length,
     double m_link1_radius,
     double m_link2_length, 
@@ -39,40 +40,68 @@ Arm::Arm(
     link1_mass = m_link1_mass;
     link2_mass = m_link2_mass;
     link3_mass = m_link3_mass;
-
+    // For this 7-DoF arm, we have 7 links and 4 virtuals
+    // Mass and inertia for the virtual joints/links
+    m_virtual {1e-3};
+    i_virtual {1e-4};
+    G_virtual = Matrix6d::Identity();
+    G_virtual.topLeftCorner(3,3) = Matrix6d::Identity() * i_virtual;
+    G_virtual.bottomRightCorner(3,3) = Matrix6d::Identity() * m_virtual
     G1 = screw_math::getSpatialInertiaMatrix(m_link1_mass, m_link1_length, m_link1_radius);
     G2 = screw_math::getSpatialInertiaMatrix(m_link2_mass, m_link2_length, m_link2_radius);
     G3 = screw_math::getSpatialInertiaMatrix(m_link3_mass, m_link3_length, m_link3_radius);
-    G_list = {G1, G2, G3};
+    G_list = {G_virtual, G_virtual, G1, G_virtual, G2, G_virtual, G3};
 
     
     // Screw axis S = [ omega v]* expressed in the spatial frame.
-    S1 << 0, 0, 1, 0, 0, 0;
-    S2 << 0, 1, 0, -link1_length, 0, 0;
-    S3 << 1, 0, 0, 0, link1_length + link2_length, 0;
+    // Shoulder
+    S1z << 0, 0, 1, 0, 0, 0;
+    S1y << 0, 1, 0, 0, 0, 0;
+    S1x << 1, 0, 0, 0, 0, 0;
+    // Elbow
+    // We simplfy by considering that the supination-pronation movement happens in the elbow
+    S2x << 1, 0, 0, 0, link1_length, 0;
+    S2z << 0, 0, 1, 0, 0, 0;
+    // Wrist
+    S3x << 1, 0, 0, 0, link1_length + link2_length, 0;
+    S3y << 0, 1, 0, -(link1_length + link2_length), 0, 0, ;
 
-    S_list = {S1, S2, S3}; // std::vector
+    S_list = {S1z, S1y, S1x, S2x, S2z, S3y, S3x}; // std::vector
 
     // Position of joints and end effector at home configuration
-    M1 << 1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, m_link1_length/2,
-          0, 0, 0, 1;
-    M2 << 1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, m_link1_length + m_link2_length/2,
-          0, 0, 0, 1;   
-    M3 << 1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, m_link1_length + m_link2_length + m_link3_length/2,
-          0, 0, 0, 1;
+    M0 = Matrix4d::Identity();
+    // Virtual segment
+    M0_1 = Matrix4d::Identity(); // Virtual segment
+    M0_2 = Matrix4d::Identity(); // Virtual segment
+    M0_3 << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, m_link1_length/2,
+            0, 0, 0, 1;
+    // The config of the virtual segment is defined inside the articulation
+    M0_4 << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, m_link1_length,
+            0, 0, 0, 1;
+    M0_5 << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, m_link1_length + m_link2_length/2,
+            0, 0, 0, 1;
+    // Virtual segment
+    M0_5 << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, m_link1_length + m_link2_length,
+            0, 0, 0, 1;
+    M0_6 << 1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, m_link1_length + m_link2_length + m_link3_length/2,
+            0, 0, 0, 1;
 
-    Me << 1, 0, 0, 0,
+    M0_e << 1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, m_link1_length + m_link2_length + m_link3_length,
           0, 0, 0, 1;
     
-    M_list = {M1, M2, M3, Me}; // std::vector   
+    M_abs_list = {M0, M0_1, M0_2, M0_3, M0_4, M0_5, M0_6, M0_e}; // std::vector   
 }
 
 MatrixXd Arm::getJacobian(const VectorXd& X)
