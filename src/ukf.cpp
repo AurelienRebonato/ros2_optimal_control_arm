@@ -37,7 +37,8 @@ void UnscentedKalmanFilter::init(const Eigen::VectorXd& x_init,
 
 void UnscentedKalmanFilter::predict(std::function<Eigen::VectorXd(const Eigen::VectorXd&)> step_dynamics_func) 
 {
-    Eigen::MatrixXd P_safe = P_ + Eigen::MatrixXd::Identity(L_, L_) * 1e-6;
+
+    Eigen::MatrixXd P_safe = P_ + Eigen::MatrixXd::Identity(L_, L_) * 1e-6; // Tikhonov regularisation to avoid errors due to numerical rounding
     
     Eigen::LLT<Eigen::MatrixXd> lltOfP(P_safe);
     Eigen::MatrixXd L_matrix = lltOfP.matrixL();
